@@ -1,29 +1,33 @@
 #!/usr/bin/env python3
 """
 Sign all verified keys in the keys/ directory.
-
 Usage:
     python sign_all.py [--dry-run]
+    
+Requires a .netid file in the repository root containing your NetID.
 """
-
 import sys
 import os
 import glob
-
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from gpg_utils import (
-    verify_key_file, get_my_key_info, extract_netid,
+    verify_key_file, get_my_key_info, get_my_netid,
     sign_key, export_key, import_key, ensure_course_key_imported,
     Colors, COURSE_LONG_ID
 )
-
-
 def main():
     dry_run = "--dry-run" in sys.argv
     
     if not sys.stdout.isatty():
         Colors.disable()
+    
+    # Get my NetID from config
+    my_netid = get_my_netid()
+    if not my_netid:
+        print(f"{Colors.RED}Error: .netid file not found in repository root.{Colors.NC}")
+        print("Create a .netid file containing your NetID:")
+        print("  echo 'abc123' > .netid")
+        sys.exit(1)
     
     # Get my key info
     my_key = get_my_key_info()
@@ -32,11 +36,9 @@ def main():
         print("Make sure you have imported your private key.")
         sys.exit(1)
     
-    my_netid = extract_netid(my_key.uid)
-    
+    print(f"Your NetID: {my_netid}")
     print(f"Your key: {my_key.key_id}")
     print(f"Your UID: {my_key.uid}")
-    print(f"Your NetID: {my_netid}")
     if dry_run:
         print(f"{Colors.YELLOW}[DRY RUN - no changes will be made]{Colors.NC}")
     print()
@@ -123,7 +125,5 @@ def main():
         print(f"  2. git commit -m 'Add signatures from {my_netid}'")
         print(f"  3. git push (or create PR)")
     print("=" * 40)
-
-
 if __name__ == "__main__":
     main()

@@ -49,6 +49,11 @@ git push
    - CI will reject files outside `keys/*.asc` or `signed/*/*.asc`
 5. Wait for merge (ideally, a pull request pass the status check will be merged automatically)
 
+To use the scripts in the following steps, please in the root directory of the repository do
+```
+echo "<your-net-id>" > .netid
+```
+
 ### Step 2: Sign Everyone's Keys
 Note: This step is repeatable. Feel free to rerun when someone needs signatures from you.
 

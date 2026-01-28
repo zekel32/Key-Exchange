@@ -1,28 +1,32 @@
 #!/usr/bin/env python3
 """
 Collect signatures on your key from the signed/ directory.
-
 Usage:
     python collect_signatures.py [--dry-run]
+    
+Requires a .netid file in the repository root containing your NetID.
 """
-
 import sys
 import os
 import glob
-
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
 from gpg_utils import (
-    get_my_key_info, extract_netid, import_key, count_signatures,
+    get_my_key_info, get_my_netid, import_key, count_signatures,
     Colors, COURSE_LONG_ID
 )
-
-
 def main():
     dry_run = "--dry-run" in sys.argv
     
     if not sys.stdout.isatty():
         Colors.disable()
+    
+    # Get my NetID from config
+    my_netid = get_my_netid()
+    if not my_netid:
+        print(f"{Colors.RED}Error: .netid file not found in repository root.{Colors.NC}")
+        print("Create a .netid file containing your NetID:")
+        print("  echo 'abc123' > .netid")
+        sys.exit(1)
     
     # Get my key info
     my_key = get_my_key_info()
@@ -30,11 +34,9 @@ def main():
         print(f"{Colors.RED}Error: No secret key found.{Colors.NC}")
         sys.exit(1)
     
-    my_netid = extract_netid(my_key.uid)
-    
+    print(f"Your NetID: {my_netid}")
     print(f"Your key: {my_key.key_id}")
     print(f"Your UID: {my_key.uid}")
-    print(f"Your NetID: {my_netid}")
     if dry_run:
         print(f"{Colors.YELLOW}[DRY RUN - no changes will be made]{Colors.NC}")
     print()
@@ -102,7 +104,5 @@ def main():
         print(f"🎉 You have {student_sigs} student signatures (goal: 15) - {Colors.GREEN}COMPLETE!{Colors.NC}")
     else:
         print(f"📊 You have {student_sigs} student signatures (goal: 15) - need {15 - student_sigs} more")
-
-
 if __name__ == "__main__":
     main()

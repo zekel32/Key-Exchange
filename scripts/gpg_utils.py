@@ -229,11 +229,24 @@ def get_my_key_info() -> Optional[KeyInfo]:
     return None
 
 
-def extract_netid(uid: str) -> str:
-    """Extract netid from a Yale email UID"""
-    import re
-    match = re.search(r'([a-z]+[0-9]+)@yale\.edu', uid.lower())
-    return match.group(1) if match else "unknown"
+def get_my_netid() -> Optional[str]:
+    """
+    Read NetID from .netid config file in repository root.
+    
+    Returns:
+        NetID string if file exists and is valid, None otherwise.
+    """
+    netid_file = ".netid"
+    
+    if not os.path.exists(netid_file):
+        return None
+    
+    try:
+        with open(netid_file, "r") as f:
+            netid = f.read().strip()
+            return netid if netid else None
+    except (IOError, OSError):
+        return None
 
 
 def sign_key(key_id: str) -> bool:
